@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE taglib
+        PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN"
+        "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd">
+<taglib>
+  <tlibversion>1.0</tlibversion>
+  <jspversion>1.1</jspversion>
+	<shortname>umtssotag</shortname>
+
+	<tag>
+		<name>umtUrl</name>
+		<tagclass>cn.vlabs.umtssotag.UmtUrlTag</tagclass>
+		<bodycontent>JSP</bodycontent>				
+	</tag>
+	<tag>
+		<name>umtRecApp</name>
+		<tagclass>cn.vlabs.umtssotag.UmtRecAppLogout</tagclass>
+		<bodycontent>empty</bodycontent>				
+	</tag>
+	<tag>
+		<name>umtLogoutTag</name>
+		<tagclass>cn.vlabs.umtssotag.UmtLogoutTag</tagclass>
+		<bodycontent>empty</bodycontent>					
+	</tag>
+	<tag>
+		<name>umtRefClt</name>
+		<tagclass>cn.vlabs.umtssologout.client.RecUmtSessIdTag</tagclass>
+		<bodycontent>empty</bodycontent>	
+				
+	</tag>
+</taglib>

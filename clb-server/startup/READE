@@ -1,0 +1,86 @@
+CLB Startup使用说明 
+---------------------------------------------------------------------------------------------------------------------------
+Author:Clive Lee Date:2013-03-12
+---------------------------------------------------------------------------------------------------------------------------
+各脚本文件功能说明
+1.common-set-environment.sh 主要是给操作系统上一些必要的基础软件，如mysql,zlib-dev,jdk等
+
+2.clb-install.sh 完全安装脚本文件，功能如下：
+* 初始化安装脚本，主要功能包括从ftp或者ci服务器上下载tomcat,nginx,mongodb等安装包，下载目录为src
+* 当所有下载结束后，clb-install.sh将会把src中的文件解压，然后make或者unzip到与src同级的servers目录中
+* 下载clb所依赖的jar包把它们放到servers/apache-tomcat-7.0.26/sharedlib文件夹中
+* 修改catalina.properties使得tomcat可以识别sharedlib中的jar包
+* 安装带有nginx-gridfs模块的nginx，安装后的nginx目录为servers/nginx-1.2.5
+* 从ftp下载nginx.conf并替换servers/nginx-1.2.5/conf/nginx.conf
+* 解压并移动mongodb，最终目录为servers/mongodb-2.2.2
+* 根据setup.properties中的值替换clb.tpl中的变量并生成clbconfig.proprerties文件
+* 替换servers/apache-tomcat-7.0.26/webapps/clb/WEB-INF/conf/clbconfig.properties文件
+* 移除clb6数据库，并新建一个空的clb6数据库
+
+3.clb-startup.sh 将clb启动起来的脚本，可选择启动单独的具体服务
+* 注意：mongodb服务需要先启动，并且需要等待至少30秒以上的时间才可以启动tomcat和nginx服务
+
+4.clb-shutdown.sh 将clb当前运行的服务停止的脚本，可选择跳过任意一个已在运行的服务
+
+5.clb-change-config.sh 当需要修改配置文件时，请先修改setup.properties中的配置项，然后运行此脚本以更新，更新完毕后请运行clb-shutdown.sh和clb-startup.sh
+
+---------------------------------------------------------------------------------------------------------------------------
+示例
+
+Case 1 从零开始搭建CLB平台
+1.运行common-set-environment.sh
+2.编辑setup.properties修改为当前的配置项
+3.运行clb-install.sh
+4.运行clb-startup.sh
+
+Case 2 修改配置并重启
+1.修改setup.properties中的配置项
+2.运行clb-chang-config.sh
+3.运行clb-shutdown.sh
+4.运行clb-startup.sh
+
+---------------------------------------------------------------------------------------------------------------------------
+
+附录：正常运行的clb服务的文件结构图
+|-- build
+|   |-- clb-change-config.sh
+|   |-- clb-install.sh
+|   |-- clb-shutdown.sh
+|   |-- clb-startup.sh
+|   |-- common-set-environment.sh
+|   |-- replace-props.awk
+|   |-- setup.properties
+|   `-- template
+|       `-- clb.tpl
+|-- data
+|   |-- docs.0
+|   |-- docs.1
+|   |-- docs.ns
+|   |-- journal
+|   |   |-- j._0
+|   |   |-- lsn
+|   |   |-- prealloc.1
+|   |   `-- prealloc.2
+|   `-- mongod.lock
+|-- servers
+|   |-- apache-tomcat-7.0.26
+|   |   |-- bin
+|   |   |-- conf
+|   |   |-- lib
+|   |   |-- logs
+|   |   |-- sharedlib
+|   |   |-- temp
+|   |   |-- webapps
+|   |   |   |-- ROOT
+|   |   |   |-- clb
+|   |   |   |-- ...
+|   |-- mongodb-2.2.2
+|   |   |-- ...
+|   |-- nginx-1.2.5
+|   |   |-- ....
+|   `-- pcre-8.31
+`-- src
+    |-- mongodb-linux-x86_64-2.2.2.tgz
+    |-- nginx-1.2.5.tar.gz
+    |-- nginx-gridfs.zip
+    `-- pcre-8.31.tar.gz
