@@ -1,0 +1,596 @@
+﻿
+
+                               版本更新历史(分支for aone)
+            注：clbconfig.properties/clb.sql文件如有变化，请在此说明！
+            ===========================================================================
+            
+clb 6.3.4 2016-03-04 liyanzhao@cstnet.cn
+---------------------------------------------------
+  * 新增实体类 CreateDocInfo 用于替换 CreateInfo,新增字段 clbid
+  * 新增实体类 DocMetaInfo 用于替换 MetaInfo,新增字段 md5
+       新增实体类在新接口中使用, json格式传递,为兼容低版本原有实体类继续保留
+  
+  * 新增4个API接口（json格式）:
+       public UpdateInfo createDocument(CreateDocInfo ci, IResource si); //创建文档
+       public DocMetaInfo getDocMeta(int docid, String version) throws InvalidArgument, ResourceNotFound, AccessForbidden; //获取文档信息
+       public DocMetaInfo getDocMeta(int docid) throws ResourceNotFound, AccessForbidden; //获取文档信息
+       public void createClbRef(ClbMeta meta); //添加clb上传记录
+
+            
+clb 6.3.3 2015-05-13 liyanzhao@cstnet.cn
+---------------------------------------------------
+* clb-api-6.3.3-SNAPSHOT新增1个API接口:
+
+   DocumentFacade添加：
+      public String queryMd5(String storageKey); //根据storageKey查询Md5
+    
+   GetMetaInfoHandler修改:
+      返回MetaInfo中添加Md5 
+    
+clb 6.3.2 2015-03-31 liyanzhao@cstnet.cn
+---------------------------------------------------
+* clb-api-6.3.2-SNAPSHOT新增2个API接口:
+    public Integer queryClbidForMD5(String md5,long size); //根据MD5和size查询文件对应clbid
+    
+    public void createClbRef(int clbid,String fileName,String md5,long size);  //关联文件，添加clb记录
+
+clb 6.3.1 2015-02-11 liji@cstnet.cn
+---------------------------------------------------
+* 增加clb只读模式，clbconfig.properties新增配置项：
+	clb.io.mode=readonly #表示只读模式
+	clb.io.mode=writeable #表示可读写模式
+* 当设置为只读模式时，所有涉及写入的操作均会抛出InvalidOperationException；
+
+clb 6.3.0 2014-07-28 liji@cstnet.cn
+---------------------------------------------------
+* 原来clb项目被分解为两个子项目:clb-api和clb-server
+* 新svn地址为:
+	- clb-server => http://svn.cerc.cnic.cn/svn/clb/trunk/v2/clb-server
+	- clb-api => http://svn.cerc.cnic.cn/svn/clb/trunk/v2/clb-api
+
+* clb-api-6.3.0-SNAPSHOT新增4个API接口:
+
+	public ChunkResponse prepareChunkUpload(String filename, String md5, long size, long chunkSize);
+
+    public ChunkResponse executeChunkUpload(int docid, int chunkedIndex, byte[] buf, int numOfBytes);
+
+    public ChunkResponse finishChunkUpload(int docid);
+
+    public Set<Integer> queryEmptyChunks(int docid);
+
+* clb-server-6.3.0-SNAPSHOT:新增分块上传功能
+* clb-server-6.3.0-SNAPSHOT:对于新的分块文件上传添加了MD5去重功能
+
+
+* SQL变化
+	ALTER TABLE `clb_doc_version` ADD COLUMN `uploadStatus` varchar(255) default 'waiting' AFTER `appid`;
+	ALTER TABLE `clb_doc_version` ADD COLUMN `completeTime` timestamp NULL default '0000-00-00 00:00:00' AFTER `uploadStatus`;
+
+	update clb_doc_version set uploadStatus='complete';
+	
+* SQL新增两张表
+	CREATE TABLE `clb_chunk_status` (
+	  `id` int(11) NOT NULL auto_increment,
+	  `appid` int(11) NOT NULL,
+	  `docid` int(11) NOT NULL,
+	  `version` int(11) NOT NULL,
+	  `num_of_chunk` int(11) NOT NULL,
+	  `chunk_size` bigint(20) NOT NULL,
+	  `current_chunk_index` int(11) NOT NULL,
+	  `last_update_time` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+	  `status` varchar(20) character set latin1 NOT NULL,
+	  `begin_upload_time` timestamp NOT NULL default '0000-00-00 00:00:00',
+	  `chunk_map` text,
+	  `md5` varchar(255) NOT NULL,
+	  `file_size` bigint(20) NOT NULL,
+	  PRIMARY KEY  (`id`),
+	  UNIQUE KEY `pk_chunk_status` (`appid`,`docid`,`version`)
+	) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+	
+	CREATE TABLE `clb_doc_ref` (
+	  `id` int(11) NOT NULL auto_increment,
+	  `md5` varchar(64) character set latin1 NOT NULL,
+	  `size` bigint(20) NOT NULL,
+	  `ref` int(11) NOT NULL,
+	  `storage_key` varchar(32) character set latin1 NOT NULL,
+	  PRIMARY KEY  (`id`),
+	  UNIQUE KEY `md5_size` (`md5`,`size`),
+	  UNIQUE KEY `storage_key` (`storage_key`)
+	) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+
+clb 6.2.2 2014-04-15 liji@cstnet.cn
+---------------------------------------------------
+* 修复多台clb服务器不支持预览服务的bug，改用redis提供缓存服务
+
+clb 6.2.1 2014-03-17 liji@cstnet.cn
+---------------------------------------------------
+* SQL去掉更新语句为，如果没有更新6.2.0可以跳过此步骤：
+	ALTER TABLE `clb_pdf_item` DROP COLUMN `useTime` int NOT NULL AFTER `appid`;
+	ALTER TABLE `clb_pdf_item` DROP COLUMN `hasMorePage` varchar(20) NOT NULL DEFAULT 'unknown' AFTER `useTime`;
+* 新增Office Web App Server（owa）以提供文档预览服务；
+* 新增owa数据源访问接口：
+	${clbdomain}/wopi/p?accessToken=${accessToken}
+* 其他应用获取预览界面时需要首先从clb获得一个5分钟内有效的token，产生此token的REST接口为：
+	${clbdomain}/wopi/fetch/accessToken?appname=xx&password=xxx&docid=1&version=2
+* 新增两个配置项目：
+	clb.local.domain=clbs.escience.cn
+	clb.wopi.domain=preview.escience.cn
+	
+clb 6.2.0 2014-01-26 liji@cstnet.cn
+---------------------------------------------------
+* 重写dconvert功能代码，将dconvert融入clb中
+* 使用oracle提供的开源pdfexport工具完成文档转换功能，需要在clb的本地安装pdfexport，系统要求为centos 6.4
+* 增加配置项：clb.pdfconvert.worker.num = 3, 表示文档转换后台工作线程的个数
+* 只转换文档的前100页,小于100页转换成功时返回CONVERT_SUCCESS状态码;
+* 对于100页以上的文件返回CONVERT_SUCCESS_AND_HAS_MORE状态码;
+* 识别更为具体的错误码，如密码保护，源文件损坏等情况;
+* 修改clb_pdf_item表,增加两列:
+	useTime - 完成文档转换所消耗的时间
+	hasMorePage - 是否包含100页以上的文档,可能的值为{ unknown | yes | no },默认为unknown;
+* SQL更新语句为
+	ALTER TABLE `clb_pdf_item` ADD COLUMN `useTime` int NOT NULL AFTER `appid`;
+	ALTER TABLE `clb_pdf_item` ADD COLUMN `hasMorePage` varchar(20) NOT NULL DEFAULT 'unknown' AFTER `useTime`;
+
+
+clb 6.1.7 2013-12-24 liji@cstnet.cn
+---------------------------------------------------
+* 修复由于同步引起的后台线程等待的性能问题
+* 修复mongodb退出时的内存泄露
+
+clb 6.1.6 2013-12-19 liji@cstnet.cn
+---------------------------------------------------
+
+* 替换图片压缩引擎: 使用GraphicsMagicks来替换已有的java标准图片压缩方式;
+* 图片压缩速度提高3-6倍，详细对比请看图;
+* 支持更多种的图片转换格式
+* 支持gif动态图片的压缩
+* 图片压缩服务增加任务去重机制
+* 初次上传图片时如果是图片将会缓存一份到本地临时文件中，利用本地缓存文件加速压缩图片的速度
+* startup文件夹中增加graphicsmagicks安装脚本graphicsmagicks-install.sh
+
+---------------------------------------------------
+clb 6.1.5 2013-12-12 liji@cstnet.cn
+* api中新增一个枚举状态类CLBStatus，共有四种状态：READY, NOT_READY, FAILED, ZOMBIE
+* 修改ResizeImage类，增加一个新的属性List<ImageMeta> metaList;
+* 新增一个新数据类ImageMeta，表示压缩图片的元信息，可查看状态、大小、宽高等;
+* 新增图片压缩状态查询接口,IResizeImageService.queryResizeStatus，返回的是一个HashMap<String,ImageMeta>对象，其中的String值有三个small,medium和large;
+* 当图片解析错误时，直接将压缩状态置为failed;
+
+---------------------------------------------------
+clb 6.1.4 2013-12-04 liji@cstnet.cn
+* 增加索引 ALTER TABLE `clb_doc` DROP INDEX `app_docid_index`, ADD UNIQUE `app_docid_index`(appid, docid);
+* 使用全局ID生成(IDGeneratorService)服务，使用falcon-0.3.3.SNAPSHOT.jar；需要一个对应的redis服务，新增两个配置：
+	clb.redis.host=10.10.2.7
+	clb.redis.port=6379
+* 压缩服务新增一个方法IResizeImageService.getContent(ImageQuery query, IFileSaver fs);
+* 获取压缩图片时可指定ImageQuery对象中的needOriginal属性来决定是否获取原始图片
+* 扩展后台压缩图片线程的数目，提高压缩图片转化速度
+* 增加一个新配置项，以指定后台压缩图片的线程数目：
+	clb.resize.worker.num=3
+* 使用frmwork.0.99来提高文件上传速度(不再需要写临时文件,而是直接以流的方式传输文件数据)
+* 增加更详细的日志记录
+---------------------------------------------------
+2013-04-19 yangxiaopeng@cnic.cn
+1.增加一个配置项：clb.dconvert.maxWaitingTime=3600000 设置文档转换的最长等待时间阈值，超过此时间还处于正在转换状态，则标记为转换失败
+       修改了QueryPdfStatusHandler中的内容，增加了针对此逻辑的测试用例
+
+clb6.0.2 2013-01-11 liji@cstnet.cn
+-------------------------------------------------------------------
+
+*新增公开文件和私有文件的权限控制功能
+*修改MongoDB中的fs表，增加一列isPub(字符串类型，两个可选值"true"/"false")
+*修改ngx_http_gridfs_module模块，使其拒绝访问私有文档
+*修改pdf转换支持列表，新增rtf类型，去掉txt类型
+*底层MongoDB存储使用分片加副本集的架构，详细见"CLB6.0系统架构与安装部署说明书.pdf"
+
+
+clb6.0.1  2013-01-11 liji@cstnet.cn
+-------------------------------------------------------------------
+
+*clb项目迁移到maven项目
+*重写clb server服务器端代码
+*重新设计clb api，将原有Pdf相关操作移动到IPdfService中
+*新增IResizeImageService和ITrivialSpaceService 两个API类
+*新增图片裁剪和小文件解压存储功能
+*在mongodb的fs.files表中新增一列storageKey,在原有数据库中新增三张表clb_pdf,clb_image和clb_trivial
+*新增nginx直连下载方式
+*修改ngx_http_gridfs_module模块，代码在doc/ngx_http_gridfs_module.c：
+	支持正确显示文件名
+	支持通过storageKey列进行查询
+	支持通过spaceName和filename进行查询
+*重新设计clb的异常处理状态码
+
+
+clb5.0.20a(2012.04.06)
+-------------------------------------------------------------------
+2012-06-18 yangxiaopeng@cnic.cn
+*新增一个接口，功能为查询特定版本的元数据信息
+
+2012-04-10 yangxiaopeng@cnic.cn
+*修改了PDF转换状态查询代码
+*在clbconfig.properties中增加了两项配置：clb.dconvert.serverURL和clb.dconvert.waitingTime
+
+2012-04-06 yangxiaopeng@cnic.cn
+*增加了三个接口，分别为PDF转换、PDF转换状态查询和PDF文档下载
+
+clb5.0.19a(2012.04.06)
+-------------------------------------------------------------------
+2012-03-29 xiejj@cnic.cn
+* 修改了CLB的代码以适应JDK7和Tomcat7
+
+clb5.0.18a(2011.8.9)
+-------------------------------------------------------------------
+1. 优化了文档内容的全文检索性能。将全文检索引擎Lucene升级到3.0.3版，采用了最新的稳定版中文分词器IK Analyzer 3.2.5，文字处理速度达到80万字/秒，自带27万汉语单词，支持包含英文字母、数字、中文词汇、韩文、日文字符等内容的全文检索。 
+2. 调整了API，全面支持旧版CLB
+
+clb5.0.17a(2011.7.22)
+-------------------------------------------------------------------
+1. CLB修改成为分布式存储服务，文档存储基于MongoDB
+2. 本版本的API暂时仅保留DocumentService中的相关操作，现有的API向下兼容
+3. 数据库修改了字段数据类型
+clb_document表中 alter table `clb_document` modify `createTime` datetime default NULL,
+clb_docver表中 alter table `clb_docver` modify `updateTime` datetime default NULL,
+
+clb5.0.16a(2011.6.12) 需要dct5.1.41a支持
+---------------------------------------------------------------------
+2011-06-09 xiejj@cnic.cn
+* 增加了数据库表clb_app_auth
+	CREATE TABLE `clb_app_auth` (
+	  `id` int(11) NOT NULL auto_increment,
+	  `name` varchar(255) default NULL,
+	  `password` varbinary(255) default NULL,
+	  PRIMARY KEY  (`id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 新的简化的模式下CLB不去VMT获取用户的组织信息，所有应用直接以应用帐号进行访问。CLB API调用的模式将发生变化
+ 		CLBPasswdInfo pwd = new CLBPasswdInfo();
+		pwd.setPassword("abc");
+		pwd.setUsername("Kevin");
+		DocumentService docService =
+			 CLBServiceFactory.getDocumentService(serviceURL, pwd);
+		//docService.createDocument(xxx);
+
+clb5.0.15(2011.5.20)
+-------------------------------------
+2011-05-20
+修改了下载的服务代码，不再记录客户端浏览器主动放弃连接的异常(SocketException:connection reset) 
+
+clb5.0.14( 2011.5.17)
+---------------------------------------
+2011-05-16
+修改数据库：表clb_document中加入字段isPub, `isPub` tinyint(4) default '0',
+
+clb5.0.13 (2011.04.14)
+--------------------------------------------------
+2011-04-14 xiejj
+* 修改了异常处理代码(StackTrace.java)，原代码在某些情况下(包含Cause的Exception)，会导致内存溢出。
+
+clb5.0.12 (2011.04.08)
+-----------------------------------------
+2011-04-11 lgy
+* 修改了从CLB下载的FLASH无法再DCT的Flash插件中无法直接播放的Bug。
+
+----------------------------------------------
+clb5.0.11 (2011.04.08)
+-----------------------------------------------
+2011.04.08 lgy&xiejj修改部分bug
+
+2011.03.23 fred
+* 修改更新权限保存的错误
+* 如果发生错误会产生数据库表clb_acl的数据错误，需要进行修复，修复方式如下：
+*       在clb_acl表中，如果entityName表示的是组，那么需要把entityType的值改为1。
+2011-01-20 xiejj
+* 更新了Framework，并籍此修改了API包
+
+2010.11.30 xiejj
+* 修改了调用API，第一次上传文档时，无法正确上传的Bug，修改更新API的Jar包
+
+clb5.0.10 (2010.11.11)
+----------------------------------------------
+2010.11.11 fred vmt-api变化，需要更新sharedlib
+
+clb5.0.9(2010.11.03)
+----------------------------------------------------
+2010.10.28 fred
+* 修改bug：Clb注销后页面显示错误
+
+clb5.0.8(2010.10.26)
+----------------------------------------------------
+2010.10.26
+* 更新vmt-api.jar文件
+* 删除clbconfig.properties文件中duckling.vmt.keyCenter，duckling.vmt.api.service两个配置项   
+
+clb5.0.7(2010.10.19) 需要dct5.1.22版本
+----------------------------------------------------
+2010.10.18 fred
+* 所有模块使用cerc-cred.jar 来进行身份认证，把duckling-common.jar移除。sharedlib包需要更新
+
+clb5.0.6(2010.10.9)
+------------------------------------------------------
+2010.10.9 xiejj
+*  修改了批量下载接口(MultiDownload.java)对于空文件的处理。现在只记录异常信息，不再因为空文件打断批量下载过程
+
+2010.9.30 fred
+* 修改clb同时支持新老版本的umt
+
+clb5.0.5(2010.9.29)
+-----------------------------------------------------
+2010.9.19 xiejj
+*  修改了代码的编码，现在统一为UTF-8编码，更新时请注意。
+*  修改了API接口，增加了批量下载功能
+	/**
+	 * 批量下载
+	 * @param docs	需要下载的文档的ID号列表
+	 * @param fs 保存下载文件的保存对象
+	 */
+	public void getContent(int[] docs, IFileSaver fs)throws ResourceNotFound, AccessForbidden;
+	调用示例：
+		int[] docs=new int[3];
+		docs[0]=1;
+		docs[1]=2;
+		docs[2]=7;
+		File f = new File("c:\\tmp\\pack.zip");
+		if (f.exists())
+			f.delete();
+		service.getContent(docs, new CommonFileSaver("c:\\tmp"));
+		assertTrue(f.exists());
+		assertTrue(f.isFile());
+		
+	该功能需要重新编译的CLB API 包，服务器端同样需要更新。
+		
+clb5.0.4(2010.9.7)
+--------------------------------            
+Duckling修改为2.1版本
+2010-09-01 fred
+1） 修改数据库表名，添加前缀clb_
+2） 添加如下配置项
+    duckling.umt.site=http://localhost:8080/umt20
+    duckling.clb.localName=clb
+    duckling.vmt.site = http://localhost:8080/vmt
+	duckling.umt.login = ${duckling.umt.site}/login
+	duckling.umt.logout=${duckling.umt.site}/logout
+	duckling.umt.publicKey=${duckling.umt.site}/getUMTPublicKey
+	duckling.vmt.keyCenter = ${duckling.vmt.site}/keyServiceServlet
+	duckling.vmt.api.service = ${duckling.vmt.site}/newServiceServlet
+	duckling.umt.link.regist=${duckling.vmt.site}/RegisterUser.do?init=true
+3） 添加新老umt标识配置项
+    duckling.umt.oldflag
+    *使用说明
+    duckling.umt.oldflag=old  使用老的umt
+    duckling.umt.oldflag=new  使用新的umt（系统启动时候会把数据进行升级，同时会删除掉该配置项）
+    duckling.umt.oldflag      没有设置该配置项（默认使用新的umt，不对数据升级）
+4） 修改表clb_acl
+    添加两列 voName,rootGroupName
+
+
+clb5.0.3(2010.6.7)
+--------------------------------------------
+2010-06-07
+修改了clb中文档检索不到的bug    -by zzb
+
+2010-04-22
+修改build.xml，lib从duckling目录移至子目录dct下
+
+clb5.0.2
+---------------------------------
+2010-04-01
+修改duckling版本从1.2.1到2.0 -by kevin
+
+clb5.0.1
+-----------------------------------------------------
+修正了properties文件无法级联引用的问题。
+
+clb5.0.0
+----------------------------------------------------------
+2009-12-15
+配置文件中的下列项的默认值改为10
+Database.connpool.maxconn=10
+2009-11-25
+* 解决clb中httpclient关闭的相关问题
+2009-11-19(yhw)
+* 更新了umt-sso-tag-01.jar为umt-sso-tag-02.jar，改正httpclient的关闭问题
+2009-10-16(yhw)
+* 修改了国际化后“从库中删除文件”菜单项丢失的问题，其原因是加载国际化资源文件时，没有加载该项菜单的文本内容
+
+2009-9-9(yhw)
+* 修改了Flex解决了快捷菜单问题
+
+Version 4.2.12
+* 修改版本号为Duckling 1.2
+
+
+Version 4.2.11
+* 修改了Flex的语言文件Bug
+* 修改了API中Grant方法无法正确判断权限的Bug
+
+Version 4.2.10
+* 修改了Portlet页面，增加了全屏的支持，现在全屏状态下，CLB能够自动伸缩。
+* 使用了新的分词库,解决了Linux下无法实现中文分词的Bug
+
+Version 4.2.9
+* 修改了下载文件时，当文件名包含空格字符，在IE下会被解析成+号的错误
+* 修改了SignOnAction、LogOutAction两个类，完善单点登出功能
+Version 4.2.8
+2009-08-06
+1)修改了SignOnAction，增加了单点注销代码
+2）修改了SingalSignON，增加了单点注销代码
+2009-08-05
+1) 增加了单点注销功能，增加了一个SsoLogout.jsp、umt-sso-tag-01.jar文件
+2）修改了head.jsp
+2009-7-27
+1) 修改了Flex把原来获取语言swf文件的方法修改为Flex自身拼接，而不是由外部传入
+2009-07-26
+1) 修改了Flex的prefix获取方法
+Version 4.2.7
+2009-07-21
+1) 修改了porltet.jsp，加载flex的路径动态变化，避免portlet找不到
+2) 修改了CLBClient.swf，以适应portlet
+3) 修改了CLBClient.swf国际化遗漏的内容
+
+2009-07-17
+1)增加了一个i18n目录,为jsp文件国际化建立了两个文件welcome_zh_CN.properties
+和welcome.properties
+2)修改了welcome.jsp文件、Menu.jsp文件、portlet.jsp\portletwelcome.jsp
+  
+3）修改了CLBClient.swf
+4）在WebRoot目录下增加了flexi18n目录存放flex语言的swf文件
+
+CLB 4.2.5 @Duckling 1.1
+Version 4.2.6
+* 修改了API, FolderService 的ListDirectory增加了一个新功能，输入'/'将得到用户的能访问的目录列表（用户主目录，社区根目录)
+* 修改了API, FolderService 的ListDirecotry增加了新功能，现在能够获得文档的创建者、更新日期、文件大小信息。
+* 修改了API, 增加了SearchService 功能。
+  这个修改需要DCT更新相应的API包才能使用。
+
+Version 4.2.5
+* 修改了Document ID的产生方式，改为数据自动增加。
+	 alter table document modify column id int(11) NOT NULL auto_increment;
+* 加入了Version文件，以后CLB将从WEB-INF/clb.ver读取系统的版本信息。
+* Flex界面中，文件下载将使用新窗口。
+* 增加了Portlet支持
+* 修改了Parser获取方法，现在将抓取所有的异常，并予以记录。在Debug模式下将记录所有的报错信息。
+* 增加了目录项中子目录项的计数
+	alter table folder add column childcount int(11) default 0;
+	drop procedure if exists calChildCount;
+	drop procedure if exists refreshcount;
+	delimiter   // 
+
+	create procedure calChildCount()
+	begin
+     declare _childcount int;
+     declare _fid int;
+     declare stopFlag int;
+     
+     declare _result_cur cursor for select pid, count(cid) from frel group by pid;
+     DECLARE CONTINUE HANDLER FOR NOT FOUND set stopFlag=1;
+     open _result_cur;
+     repeat
+           fetch _result_cur into _fid, _childcount;
+                 update folder set childcount=_childcount where id=_fid;
+     UNTIL stopFlag = 1
+     end repeat;
+     close _result_cur;
+	end;
+	//
+
+	create procedure refreshcount(in folderid int)
+	begin
+     declare v_childcount int;
+     select count(cid) into v_childcount from frel where pid = folderid;
+     update folder set childcount=v_childcount where id=folderid;
+	end;
+	//
+	delimiter   ;
+	call calChildCount();
+* 增加了API接口中目录项的访问接口
+
+CLB 4.2.4@Duckling 1.0
+Version 4.2.4
+* 修正了，社区显示名称包含括号"()" 时，无法找到路径的错误。
+
+Version 4.2.3
+* 修正了递归删除时，如果先建立文件夹，后创建文档链接是的错误(Bug 1006)
+* 修正了向社区目录复制文档链接时，出现文档权限重新设置的错误(Bug 967)
+* 修正了目录中只有一个目录项时，无法选中的错误(Bug 995)
+* 修正了文件长度，正好80个字符时，无法通过检查的错误(Bug 994)
+* 修正了在链接复制、移动时，将其他错误信息为误认为重名的错误(Bug 999)
+
+Version 4.2.2
+* 首页改为直接登录，注销后等待页面为现在的首页。
+* 修改IE下，第一次无法下载文件的问题。
+* 链接名、目录名长度限制统一为80个字符。
+* 授权界面中，"查看"和"修改"两列不再允许排序。授权时显示人名，以及重名时的选中提示。
+* 现在可以正确的将目录移动到空间的根目录。
+* 链接路径现在改成更容易理解的方式 (/user/username/未整理文档 --> /我的空间/未整理文档) (/vo/cerc/未整理文档 --> /协同工作研究中心/未整理文档)
+* 现在授权界面的授权对象显示为相关对象的显示名称。
+* 在移动目录或者文件以后，现在会出现 让用户改名的界面。
+* 现在要在文档能够正确创建链接时，文档的内容才会保存。
+* "显示所有标签"，现在只会显示，拥有查询结果的标签。
+* 在”显示目录下所有链接“的选项选中时，如果子目录中没有权限查看，将不再报错。
+* 选中”显示子目录下所有链接”时,右键相应操作时的BUG
+* 在“标签过滤”区进行标签过滤时目录树里的状态对应
+* 搜索结果一直显示为0的BUG
+* 搜索结果为空时显示空白页
+* 工具栏中上传及创建目录时的路径正确性
+* 从文档库进行标签过滤后清空“从搜索结果中过滤”栏的标签
+
+Version 4.2.1
+* 修改了文件名的长度,现在最长240个字符
+	alter table `docver` modify filename varchar(240) NOT NULL default '';
+* 修改了“未整理文档”和其他目录的排序。
+* 统一关键名词为：文档库、文档、链接、目录。
+* 加入了对元数据的搜索。
+* “未整理文档”中的文档拖到其他目录的操作，默认为移动操作，而非复制（链接）操作（CLB）。
+* 按住shift为移动操作，按住ctrl为复制操作（CLB）。
+更多具体细节参见：香山会议纪要（http://wiki.cerc.cnic.cn/Wiki.jsp?page=%E9%A6%99%E5%B1%B1%E4%BC%9A%E8%AE%AE%E9%97%AE%E9%A2%98%E5%88%97%E8%A1%A8）
+
+Version 4.1.8
+* 增加了 "我创建的文档" "最近更新"两个搜索目录。这里的文件由搜索产生。
+* "我的文档" 改名为 "我的空间"，社区目录 称作 社区空间。
+* "未整理文档" 作为文档上传的缺省目录，不再作为保存遗留文件的功能使用。空间主目录不再允许存放文件，已存在的文件不做处理。
+* "未整理文档" 目录不再自动改名。
+* 现在删除和移动目录的权限将由 父目录的权限设置决定。
+* 标签现在可以包含空格，输入方式是用双引号引起来。
+* 在社区空间中上传的文档，将自动设置为该社区可读，文档属主全权控制。
+* 增加删除标志，以后能正确区分删除和没有权限。
+	alter table `document` add column deleted char default 'F';
+  文档引用的状态变为，正常和Broken 两种状态，Broken状态的引用，可以复制，移动，但是无法执行 获得文档内容，更新文档内容，更新标签和授权。
+* 增加"搜索结果" 搜索目录，点击该目录显示当前搜索结果的当前页。当前搜索结果包括 最近更新， 我上传的文档， 搜索按钮出来的内容。
+* 主页面在浏览器没有安装 Flash插件时，能显示请用户安装 Flash插件的链接信息。
+* IE下社区切换菜单也使用Select控件来显示。
+* 能正确处理标签的大小写问题，不再出现无法更新标签的错误(Bug 940)。
+
+Version 4.1.7
+* 修正了Firefox下无法输入中文的问题。
+
+Version 4.1.6
+* 修正了Firefox下文件上传组件无法正常上传的Bug
+* 修正了无法正确对文档打多个标签的问题。
+* 修正了对文档时间和大小的排序，现在已经能正确排序。
+* 增加了社区选择菜单，现在用户可以通过菜单选择想要看的社区，以前需要在URL参数中携带VO信息。
+* 开放了对目录的授权，且现在不能删除文档属主的权限，和目录属主的权限(社区目录中是 该社区的管理员，个人目录中是该用户自己)。
+* 修正了，显示目录及其目录以下文件时，目录层次错误的Bug。
+* 增加了登录等待页面，用户不用输入URL，就可以正确的重新登录CLB。
+* 修改了登录以后页面的流转方式，用户登录以后，将直接重定向到主页面，SignOn.do的URL不会再出现在登录以后。
+* 现在可以区分是复制链接还是移动链接了，移动链接使用新的图标(右上方向的箭头)。
+* 修正了上传时重定名，摘要、标签时的问题，以及错误提示后的窗口关闭。
+* 增加了标签管理时，通过标签浏览后的返回功能。
+* 添加了完整的特殊符号的合法性验证。
+* 其它Bug的修正。
+
+Version 4.1.4
+* 增加了基于FLEX的前台控制界面
+	具体操作可参见测试大纲：
+	http://wiki.cerc.cnic.cn/ShareWiki.jsp?hash=XO%2B%2FvXXvv73vv70w77%2B9Fl8S&ID=7
+* 增加了虚拟目录的概念。
+* 文档的建立索引过程和上传过程分离。
+* 标签概念平面化，标签不再分类型，标签的含义将由字面意思完全决定。
+* 修改了内部的权限控制逻辑，增加了角色概念，同时增加了虚目录的权限控制。
+
+
+* 内部修改：
+--增加了表folder
+CREATE TABLE `folder` (
+  `id` int(11) NOT NULL auto_increment,
+  `name` varchar(255) binary default NULL,
+  `type` char(1) NOT NULL default 'f',
+  `docid` int(11) default NULL,
+  `creator` varchar(255) binary default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET='UTF8';
+
+INSERT INTO `folder`(id, `name`,`type`,docid,creator)
+	VALUES(1, '/','f',0,'admin@root.umt');
+	
+--新创建表frel
+CREATE TABLE `frel` (
+  `cid` int(11) NOT NULL default '0',
+  `pid` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`cid`,`pid`)
+) ENGINE=InnoDB DEFAULT CHARSET='UTF8';
+
+--修改ACL表结构。
+alter table `acl` add column resourceType varchar(64) binary default NULL;
+update acl set resourceType='DOCUMENT';
+--修改docver表结构
+alter table `docver` add column hashcode varchar(64) default NULL;

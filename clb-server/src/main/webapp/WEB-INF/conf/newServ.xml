@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServiceConfig>
+	<validator>cn.vlabs.rest.examples.NullValidator</validator>
+	<!-- API包的类型，请每个应用自行改变 -->
+	<type>clb</type>
+	<!-- API包的版本，请每个应用自行改变 -->
+	<version>4.1.4</version>
+	<entires>
+		<!-- Start of new Service -->
+		<!-- 回显服务，用于测试连接状态 -->
+		<Service>
+			<servicename>System.echo</servicename>
+			<clazz>cn.vlabs.rest.examples.EchoService</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 显示服务信息，包括API版本，类型和框架的版本 -->
+		<Service>
+			<servicename>System.info</servicename>
+			<clazz>cn.vlabs.rest.examples.SystemInfo</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+
+		<!-- 获取直接下载URL服务 -->
+		<Service>
+			<servicename>document.direct.url</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.GetDirectURLHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		
+		<!-- 上传服务 -->
+		<Service>
+			<servicename>document.create</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.CreateDocHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<Service>
+			<servicename>document.create.doc</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.CreateDocForJsonHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 批量上传服务 -->
+		<Service>
+			<servicename>document.batchcreate</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.CreateMultiDocsHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 删除 -->
+		<Service>
+			<servicename>document.delete</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.RemoveDocHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 下载服务 -->
+		<Service>
+			<servicename>document.getcontent</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.GetDocContentHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 批量下载服务 -->
+		<Service>
+			<servicename>document.package</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.GetMultiDocsContentHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 显示文档历史 -->
+		<Service>
+			<servicename>document.history</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.DocHistoryHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 显示文档元信息 -->
+		<Service>
+			<servicename>document.meta.docid</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.GetMetaInfoHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<Service>
+			<servicename>document.meta</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.GetDocMetaInfoHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 更新文档 -->
+		<Service>
+			<servicename>document.update</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.UpdateDocHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 删除文档 -->
+		<Service>
+			<servicename>document.delete.version</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.RemoveDocVersionHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+
+		<!-- 获取裁剪图片元信息服务 -->
+		<Service>
+			<servicename>image.get.resize.info</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.image.handler.GetResizeImageInfoHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 创建裁剪图片副本服务 -->
+		<Service>
+			<servicename>image.create.resize.copy</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.image.handler.CreateResizeCopyHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 图片裁剪转换状态查询服务 -->
+		<Service>
+			<servicename>image.query.resize.status</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.image.handler.QueryResizeStatusHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		
+		<Service>
+			<servicename>image.get.content</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.image.handler.GetImageContentHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+
+		<!-- PDF文档显示服务 -->
+		<Service>
+			<servicename>pdf.get.content</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.pdf.handler.GetPdfContentHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- PDF文档转换状态查询服务 -->
+		<Service>
+			<servicename>pdf.query.status</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.pdf.handler.QueryPdfStatusHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 执行文档转换服务 -->
+		<Service>
+			<servicename>pdf.convert</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.pdf.handler.ConvertDocumentHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 获取PDF直连URL -->
+		<Service>
+			<servicename>pdf.direct.url</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.pdf.handler.GetPdfDirectURLHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+
+		<!-- 创建小文件空间 -->
+		<Service>
+			<servicename>trivial.create.space</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.trivial.handler.CreateTrivialSpaceHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 获取小文件空间 -->
+		<Service>
+			<servicename>trivial.get.space</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.trivial.handler.GetTrivialSpaceHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 更新小文件空间 -->
+		<Service>
+			<servicename>trivial.update.space</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.trivial.handler.UpdateTrivialSpaceHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 删除小文件空间 -->
+		<Service>
+			<servicename>trivial.delete.space</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.trivial.handler.DeleteTrivialSpaceHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 登录 -->
+
+		<!-- 有关授权的服务 -->
+		<Service>
+			<servicename>login</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.auth.handler.LoginHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 检索 -->
+		<Service>
+			<servicename>search</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.search.handler.SearchHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<!-- 分块上传 -->
+		<Service>
+			<servicename>document.chunked.upload.prepare</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.chunk.PrepareChunkUploadHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		
+		<!-- 根据MD5查询Clbid -->
+		<Service>
+			<servicename>document.docid.md5</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.QueryClbidForMd5</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		
+		<!-- 添加clb上传记录 -->
+		<Service>
+			<servicename>document.create.clb.ref</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.CreateClbRef</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		
+		<Service>
+			<servicename>document.chunked.upload.execute</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.chunk.ExecuteChunkUploadHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		
+		<Service>
+			<servicename>document.chunked.upload.finish</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.chunk.FinishChunkUploadHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>
+		<Service>
+			<servicename>document.chunked.upload.query</servicename>
+			<clazz>cn.vlabs.clb.server.ui.frameservice.document.handler.chunk.QueryEmptyChunkHandler</clazz>
+			<validAppAuth>false</validAppAuth>
+		</Service>	
+	</entires>
+</ServiceConfig>
