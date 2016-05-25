@@ -18,7 +18,7 @@
  */
 package cn.vlabs.clb.server.ui.frameservice;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import cn.vlabs.clb.server.config.AppFacade;
 

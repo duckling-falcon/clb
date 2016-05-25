@@ -19,7 +19,7 @@
 
 package cn.vlabs.clb.api.document;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import cn.vlabs.clb.api.ErrorCode;
 import cn.vlabs.clb.api.InvalidArgument;
