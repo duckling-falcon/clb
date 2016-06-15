@@ -100,6 +100,7 @@ public class DocMetaDAO extends BaseDAO implements IDocMetaDAO {
         for (Pair p : plist) {
             result.put(p.appid, p.docid);
         }
+	if (result.isEmpty()) result.put(0,0);
         return result;
     }
 

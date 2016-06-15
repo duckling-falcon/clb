@@ -33,22 +33,22 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import cn.vlabs.clb.server.dao.document.IDocMetaDAO;
 
 public class CLBStartupListener implements ServletContextListener {
-
+    
     private static final Logger LOG = Logger.getLogger(CLBStartupListener.class);
-
+    
     @Override
     public void contextDestroyed(ServletContextEvent event) {
-
+	
     }
-
+    
     @Override
     public void contextInitialized(ServletContextEvent event) {
         WebApplicationContext factory = getWebApplicationContext(event);
         IDocMetaDAO docMetaDao = factory.getBean(IDocMetaDAO.class);
         Map<Integer,Integer> currentMap = docMetaDao.getMaxDocId();
-        IIDGeneratorService idg = factory.getBean(IIDGeneratorService.class);
-        idg.init("clb", "docmeta", currentMap);
-        LOG.info("Remote ID Generator init success.");
+	IIDGeneratorService idg = factory.getBean(IIDGeneratorService.class);
+	idg.init("clb", "docmeta", currentMap);
+	LOG.info("Remote ID Generator init success.");
     }
     
     
@@ -56,7 +56,7 @@ public class CLBStartupListener implements ServletContextListener {
         ServletContext servletContext = event.getServletContext();
         return WebApplicationContextUtils.getWebApplicationContext(servletContext);
     }
-
-
-
+    
+    
+    
 }
