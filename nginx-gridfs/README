@@ -1,0 +1,20 @@
+
+This is nginx 1.10.1 with gridfs module, as well as special support
+for Duckling-CLB.
+
+./configure --prefix=/usr/local/nginx-clb --add-module=./nginx-gridfs-module
+make
+make install
+
+Notice: The CFLAG '-Werror' is turned off because this mongo-c-driver has
+warnings on 'signed-compare'.
+
+nginx-gridfs --> https://github.com/mdirolf/nginx-gridfs
+mongo-c-driver --> https://github.com/eagleas/mongo-c-driver
+
+Unfortunately, at the nginx-gridfs' github page, the link to
+mongo-c-driver is with wrong version/commit. Moreover, the project
+seems to be stopped. 
+So, please be caution when updating next time.
+
+-appleii@20160618
