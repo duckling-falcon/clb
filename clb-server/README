@@ -1,0 +1,30 @@
+CLB-Server
+==========
+
+Build
+-----
+
+'clb-server' depends on 'dconvert'(api), another project under
+Duckling.
+
+Do 'mvn package' and get 'clb.war'.
+
+Setup
+-----
+
+1) Get clbconfig.properties from its TEMPLATE and edit it.
+
+2) With mysql, create the database, and tables by
+WEB-INF/conf/clb_schema-xxx.sql.
+
+3) Install mongodb-server (e.g. apt-get).
+
+4) Build and install nginx-gridfs (in another directory).
+
+5) Install redis (e.g. download and make).
+
+6) 'dconvert-server' is optional. 'wopi' too.
+
+7) Config tomcat for clb-server.
+
+8) Run and enjoy.
